@@ -27,26 +27,26 @@ exports.getPost = async (req, res) => {
 
 exports.createPost = async (req, res) => {
   try {
-    const { title, content, imageUrl } = req.body;
-    console.log("📥 Backend received:", {
-      body: req.body,
-      title,
-      content,
-      imageUrl,
-    });
+    console.log("📥 Backend received:");
+    console.log("  req.body:", req.body);
+    console.log("  req.file:", req.file ? req.file.originalname : "none");
 
+    const { title, content, imageUrl } = req.body;
+
+    // ✅ Validate
     if (!title || !content) {
-      console.log("❌ Missing title or content");
+      console.log("❌ Missing fields. Title:", title, "Content:", content);
       return res.status(400).json({ msg: "Title and content are required" });
     }
 
     const post = await Post.create({
       title,
       content,
-      imageUrl: imageUrl || "",
+      imageUrl: imageUrl || (req.file ? `/uploads/${req.file.filename}` : ""),
       author: req.user._id,
     });
-      await post.populate("author", "name email");
+
+    await post.populate("author", "name email");
     console.log("✅ Post created:", post._id);
     res.status(201).json(post);
   } catch (error) {
