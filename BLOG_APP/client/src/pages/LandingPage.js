@@ -251,8 +251,6 @@ const styles = {
     boxShadow: "0 5px 20px rgba(255, 107, 53, 0.4)",
     display: "inline-block",
   },
-
-  // FEATURES
   featuresSection: {
     padding: "80px 20px",
     backgroundColor: "white",
@@ -304,8 +302,6 @@ const styles = {
     lineHeight: "1.6",
     margin: 0,
   },
-
-  // ECHOES
   echoesSection: {
     backgroundColor: "#1A4D5C",
     padding: "80px 20px",
@@ -377,8 +373,6 @@ const styles = {
     justifyContent: "center",
     border: "2px dashed rgba(255,255,255,0.3)",
   },
-
-  // CTA
   ctaSection: {
     padding: "80px 20px",
     background: "linear-gradient(135deg, #FF6B35 0%, #FF8E53 100%)",
