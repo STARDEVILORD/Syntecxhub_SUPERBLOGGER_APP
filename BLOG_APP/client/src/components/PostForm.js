@@ -8,10 +8,10 @@ const PostForm = ({ post, onSubmit, loading }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const quillRef = useRef(null);
-  const [title, setTitle] = useState(post?.title || "");
-  const [content, setContent] = useState(post?.content || "");
+  const [title, setTitle] = useState(post ? post.title : "");
+  const [content, setContent] = useState(post ? post.content : "");
   const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(post?.imageUrl || "");
+  const [imagePreview, setImagePreview] = useState(post ? post.imageUrl : "");
   const [error, setError] = useState("");
 
   const modules = useMemo(
@@ -32,8 +32,18 @@ const PostForm = ({ post, onSubmit, loading }) => {
   );
 
   const formats = [
-    "header", "bold", "italic", "underline", "strike",
-    "color", "background", "list", "align", "link", "image", "code-block",
+    "header",
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "color",
+    "background",
+    "list",
+    "align",
+    "link",
+    "image",
+    "code-block",
   ];
 
   const handleImageChange = (e) => {
@@ -58,7 +68,6 @@ const PostForm = ({ post, onSubmit, loading }) => {
     e.preventDefault();
     setError("");
 
-    // ✅ Validation
     if (!title.trim()) {
       setError("Please enter a title");
       return;
@@ -70,24 +79,19 @@ const PostForm = ({ post, onSubmit, loading }) => {
       return;
     }
 
-    // ✅ Create FormData with EXACT field names backend expects
     const formData = new FormData();
-    formData.append("title", title);        // ⚠️ MUST be "title"
-    formData.append("content", content);    // ⚠️ MUST be "content"
+    formData.append("title", title);
+    formData.append("content", content);
     if (image) {
-      formData.append("image", image);      // ⚠️ Image field
+      formData.append("image", image);
     }
 
-    // ✅ Debug: Log what we're sending
-    console.log("📤 Submitting form data:");
-    for (let [key, value] of formData.entries()) {
-      console.log(`  ${key}:`, value instanceof File ? `File: ${value.name}` : value);
-    }
+    console.log("Submitting:", { title, content: content.substring(0, 50) });
 
     try {
       await onSubmit(formData);
     } catch (err) {
-      console.error("❌ Form submit error:", err);
+      console.error("Submit error:", err);
       setError(err.message || "Failed to save post");
     }
   };
@@ -99,44 +103,32 @@ const PostForm = ({ post, onSubmit, loading }) => {
       <form onSubmit={handleSubmit} style={styles.formCard}>
         <div style={styles.formHeader}>
           <h2 style={styles.formTitle}>
-            {post ? "✏️ Edit Post" : "✍️ Create New Post"}
+            {post ? "Edit Post" : "Create New Post"}
           </h2>
-          <p style={styles.formSubtitle}>
-            {user ? `Welcome, ${user.name}!` : "Share your thoughts with the world"}
-          </p>
         </div>
 
         {error && (
           <div style={styles.errorBox}>
-            <span style={styles.errorIcon}>⚠️</span> {error}
+            <span>Warning: </span> {error}
           </div>
         )}
 
-        {/* Title Field - name="title" */}
         <div style={styles.fieldGroup}>
-          <label style={styles.label}>
-            <span style={styles.labelIcon}>📌</span> Post Title
-          </label>
+          <label style={styles.label}>Post Title</label>
           <input
             type="text"
-            name="title"              {/* ⚠️ Must be "title" */}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter an engaging title..."
+            placeholder="Enter title..."
             style={styles.titleInput}
-            maxLength={200}
+            maxLength="200"
             required
             disabled={loading}
           />
-          <div style={styles.charCount}>{title.length}/200</div>
         </div>
 
-        {/* Featured Image */}
         <div style={styles.fieldGroup}>
-          <label style={styles.label}>
-            <span style={styles.labelIcon}>🖼️</span> Featured Image
-            <span style={styles.optional}>(Optional)</span>
-          </label>
+          <label style={styles.label}>Featured Image (Optional)</label>
           {!imagePreview ? (
             <label style={styles.uploadBox}>
               <input
@@ -147,28 +139,22 @@ const PostForm = ({ post, onSubmit, loading }) => {
                 disabled={loading}
               />
               <div style={styles.uploadContent}>
-                <div style={styles.uploadIcon}>📁</div>
-                <p style={styles.uploadText}>
-                  <strong>Click to upload</strong> or drag and drop
-                </p>
-                <p style={styles.uploadHint}>PNG, JPG, GIF up to 5MB</p>
+                <div style={styles.uploadIcon}>Upload</div>
+                <p>Click to upload image</p>
               </div>
             </label>
           ) : (
             <div style={styles.imagePreviewContainer}>
               <img src={imagePreview} alt="Preview" style={styles.imagePreview} />
               <button type="button" onClick={removeImage} style={styles.removeImageBtn}>
-                ✕ Remove
+                Remove
               </button>
             </div>
           )}
         </div>
 
-        {/* Content Field */}
         <div style={styles.fieldGroup}>
-          <label style={styles.label}>
-            <span style={styles.labelIcon}>📝</span> Content
-          </label>
+          <label style={styles.label}>Content</label>
           <div style={styles.quillWrapper}>
             <ReactQuill
               ref={quillRef}
@@ -177,16 +163,13 @@ const PostForm = ({ post, onSubmit, loading }) => {
               onChange={setContent}
               modules={modules}
               formats={formats}
-              placeholder="Write your amazing post here..."
+              placeholder="Write your post..."
               style={styles.quillEditor}
             />
           </div>
-          <div style={styles.editorFooter}>
-            <span>📊 {wordCount} words</span>
-          </div>
+          <div style={styles.editorFooter}>{wordCount} words</div>
         </div>
 
-        {/* Action Buttons */}
         <div style={styles.actionButtons}>
           <button
             type="button"
@@ -194,14 +177,14 @@ const PostForm = ({ post, onSubmit, loading }) => {
             style={styles.cancelBtn}
             disabled={loading}
           >
-            ← Cancel
+            Cancel
           </button>
           <button
             type="submit"
             style={{ ...styles.submitBtn, ...(loading && styles.submitBtnDisabled) }}
             disabled={loading}
           >
-            {loading ? "⏳ Publishing..." : "🚀 Publish Post"}
+            {loading ? "Publishing..." : "Publish Post"}
           </button>
         </div>
       </form>
@@ -231,44 +214,76 @@ const styles = {
     paddingBottom: "20px",
     borderBottom: "2px solid #f0f0f0",
   },
-  formTitle: { fontSize: "2em", color: "#1A4D5C", margin: "0 0 8px 0", fontWeight: "600" },
-  formSubtitle: { color: "#666", margin: 0, fontSize: "0.95em" },
+  formTitle: {
+    fontSize: "2em",
+    color: "#1A4D5C",
+    margin: 0,
+    fontWeight: "600",
+  },
   errorBox: {
-    backgroundColor: "#fee", color: "#c33", padding: "12px 16px",
-    borderRadius: "8px", marginBottom: "20px", border: "1px solid #fcc",
-    display: "flex", alignItems: "center", gap: "8px",
+    backgroundColor: "#fee",
+    color: "#c33",
+    padding: "12px 16px",
+    borderRadius: "8px",
+    marginBottom: "20px",
+    border: "1px solid #fcc",
   },
-  errorIcon: { fontSize: "1.2em" },
-  fieldGroup: { marginBottom: "25px", position: "relative" },
+  fieldGroup: {
+    marginBottom: "25px",
+  },
   label: {
-    display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px",
-    color: "#333", fontWeight: "600", fontSize: "0.95em",
+    display: "block",
+    marginBottom: "8px",
+    color: "#333",
+    fontWeight: "600",
+    fontSize: "0.95em",
   },
-  labelIcon: { fontSize: "1.1em" },
-  optional: { color: "#999", fontWeight: "400", fontSize: "0.85em", marginLeft: "5px" },
   titleInput: {
-    width: "100%", padding: "14px 16px", fontSize: "1.1em",
-    border: "2px solid #e0e0e0", borderRadius: "8px", outline: "none",
-    boxSizing: "border-box", fontFamily: "inherit",
+    width: "100%",
+    padding: "14px 16px",
+    fontSize: "1.1em",
+    border: "2px solid #e0e0e0",
+    borderRadius: "8px",
+    outline: "none",
+    boxSizing: "border-box",
+    fontFamily: "inherit",
   },
-  charCount: { position: "absolute", right: "10px", bottom: "-20px", fontSize: "0.75em", color: "#999" },
   uploadBox: {
-    display: "block", border: "2px dashed #ccc", borderRadius: "12px",
-    padding: "40px 20px", textAlign: "center", cursor: "pointer",
+    display: "block",
+    border: "2px dashed #ccc",
+    borderRadius: "12px",
+    padding: "40px 20px",
+    textAlign: "center",
+    cursor: "pointer",
     backgroundColor: "#fafafa",
   },
-  uploadContent: { pointerEvents: "none" },
-  uploadIcon: { fontSize: "3em", marginBottom: "10px" },
-  uploadText: { color: "#555", margin: "5px 0" },
-  uploadHint: { color: "#999", fontSize: "0.85em" },
-  imagePreviewContainer: {
-    position: "relative", borderRadius: "12px", overflow: "hidden", border: "2px solid #e0e0e0",
+  uploadContent: {
+    pointerEvents: "none",
   },
-  imagePreview: { width: "100%", maxHeight: "300px", objectFit: "cover", display: "block" },
+  uploadIcon: {
+    fontSize: "2em",
+    marginBottom: "10px",
+  },
+  imagePreviewContainer: {
+    position: "relative",
+    borderRadius: "12px",
+    overflow: "hidden",
+    border: "2px solid #e0e0e0",
+  },
+  imagePreview: {
+    width: "100%",
+    maxHeight: "300px",
+    objectFit: "cover",
+    display: "block",
+  },
   removeImageBtn: {
-    position: "absolute", top: "10px", right: "10px", padding: "8px 14px",
-    backgroundColor: "rgba(220, 53, 69, 0.95)", color: "white", border: "none",
-    borderRadius: "6px", cursor: "pointer", fontSize: "0.9em", fontWeight: "500",
+    padding: "8px 14px",
+    backgroundColor: "#dc3545",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    marginTop: "10px",
   },
   quillWrapper: {
     border: "2px solid #e0e0e0",
@@ -279,22 +294,41 @@ const styles = {
     height: "300px",
     marginBottom: "50px",
   },
-  editorFooter: { marginTop: "8px", fontSize: "0.85em", color: "#666", textAlign: "right" },
+  editorFooter: {
+    marginTop: "8px",
+    fontSize: "0.85em",
+    color: "#666",
+    textAlign: "right",
+  },
   actionButtons: {
-    display: "flex", gap: "15px", marginTop: "30px", paddingTop: "20px",
-    borderTop: "2px solid #f0f0f0", justifyContent: "flex-end",
+    display: "flex",
+    gap: "15px",
+    marginTop: "30px",
+    paddingTop: "20px",
+    borderTop: "2px solid #f0f0f0",
+    justifyContent: "flex-end",
   },
   cancelBtn: {
-    padding: "12px 28px", backgroundColor: "transparent", color: "#666",
-    border: "2px solid #ddd", borderRadius: "8px", cursor: "pointer",
-    fontSize: "0.95em", fontWeight: "500",
+    padding: "12px 28px",
+    backgroundColor: "transparent",
+    color: "#666",
+    border: "2px solid #ddd",
+    borderRadius: "8px",
+    cursor: "pointer",
   },
   submitBtn: {
-    padding: "12px 32px", backgroundColor: "#FF6B35", color: "white", border: "none",
-    borderRadius: "8px", cursor: "pointer", fontSize: "1em", fontWeight: "600",
-    boxShadow: "0 4px 12px rgba(255, 107, 53, 0.3)",
+    padding: "12px 32px",
+    backgroundColor: "#FF6B35",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "600",
   },
-  submitBtnDisabled: { backgroundColor: "#999", cursor: "not-allowed", boxShadow: "none" },
+  submitBtnDisabled: {
+    backgroundColor: "#999",
+    cursor: "not-allowed",
+  },
 };
 
 export default PostForm;
