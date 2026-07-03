@@ -2,8 +2,6 @@
 
 Full-stack MERN application for creating, publishing, and managing blog posts with user authentication, rich text editing, and social engagement features.
 
-🌐 **Live Demo:** (https://syntecxhub-superblogger-app-1.onrender.com/)
-
 Create an account to start sharing your stories, or browse posts from other writers in the community.
 
 ---
