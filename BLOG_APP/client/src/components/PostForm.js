@@ -28,22 +28,12 @@ const PostForm = ({ post, onSubmit, loading }) => {
         ],
       },
     }),
-    [],
+    []
   );
 
   const formats = [
-    "header",
-    "bold",
-    "italic",
-    "underline",
-    "strike",
-    "color",
-    "background",
-    "list",
-    "align",
-    "link",
-    "image",
-    "code-block",
+    "header", "bold", "italic", "underline", "strike",
+    "color", "background", "list", "align", "link", "image", "code-block",
   ];
 
   const handleImageChange = (e) => {
@@ -68,6 +58,7 @@ const PostForm = ({ post, onSubmit, loading }) => {
     e.preventDefault();
     setError("");
 
+    // ✅ Validation
     if (!title.trim()) {
       setError("Please enter a title");
       return;
@@ -79,43 +70,39 @@ const PostForm = ({ post, onSubmit, loading }) => {
       return;
     }
 
-  const formData = new FormData();
-  formData.append("title", title);       
-  formData.append("content", content);   
-  if (image) {
-    formData.append("image", image);      
-  }
+    // ✅ Create FormData with EXACT field names backend expects
+    const formData = new FormData();
+    formData.append("title", title);        // ⚠️ MUST be "title"
+    formData.append("content", content);    // ⚠️ MUST be "content"
+    if (image) {
+      formData.append("image", image);      // ⚠️ Image field
+    }
 
-  console.log("📤 Submitting form data:");
-  for (let [key, value] of formData.entries()) {
-    console.log(`  ${key}:`, value instanceof File ? `File: ${value.name}` : value);
-  }
+    // ✅ Debug: Log what we're sending
+    console.log("📤 Submitting form data:");
+    for (let [key, value] of formData.entries()) {
+      console.log(`  ${key}:`, value instanceof File ? `File: ${value.name}` : value);
+    }
 
     try {
       await onSubmit(formData);
     } catch (err) {
+      console.error("❌ Form submit error:", err);
       setError(err.message || "Failed to save post");
     }
   };
 
-  const wordCount = content
-    .replace(/<[^>]*>/g, "")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean).length;
+  const wordCount = content.replace(/<[^>]*>/g, "").trim().split(/\s+/).filter(Boolean).length;
 
   return (
     <div style={styles.pageWrapper}>
       <form onSubmit={handleSubmit} style={styles.formCard}>
-        {/* Header */}
         <div style={styles.formHeader}>
           <h2 style={styles.formTitle}>
             {post ? "✏️ Edit Post" : "✍️ Create New Post"}
           </h2>
           <p style={styles.formSubtitle}>
-            {user
-              ? `Welcome, ${user.name}!`
-              : "Share your thoughts with the world"}
+            {user ? `Welcome, ${user.name}!` : "Share your thoughts with the world"}
           </p>
         </div>
 
@@ -125,19 +112,21 @@ const PostForm = ({ post, onSubmit, loading }) => {
           </div>
         )}
 
-        {/* Title */}
+        {/* Title Field - name="title" */}
         <div style={styles.fieldGroup}>
           <label style={styles.label}>
             <span style={styles.labelIcon}>📌</span> Post Title
           </label>
           <input
             type="text"
+            name="title"              {/* ⚠️ Must be "title" */}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter an engaging title..."
             style={styles.titleInput}
             maxLength={200}
             required
+            disabled={loading}
           />
           <div style={styles.charCount}>{title.length}/200</div>
         </div>
@@ -155,6 +144,7 @@ const PostForm = ({ post, onSubmit, loading }) => {
                 accept="image/*"
                 onChange={handleImageChange}
                 style={{ display: "none" }}
+                disabled={loading}
               />
               <div style={styles.uploadContent}>
                 <div style={styles.uploadIcon}>📁</div>
@@ -166,23 +156,15 @@ const PostForm = ({ post, onSubmit, loading }) => {
             </label>
           ) : (
             <div style={styles.imagePreviewContainer}>
-              <img
-                src={imagePreview}
-                alt="Preview"
-                style={styles.imagePreview}
-              />
-              <button
-                type="button"
-                onClick={removeImage}
-                style={styles.removeImageBtn}
-              >
+              <img src={imagePreview} alt="Preview" style={styles.imagePreview} />
+              <button type="button" onClick={removeImage} style={styles.removeImageBtn}>
                 ✕ Remove
               </button>
             </div>
           )}
         </div>
 
-        {/* Content */}
+        {/* Content Field */}
         <div style={styles.fieldGroup}>
           <label style={styles.label}>
             <span style={styles.labelIcon}>📝</span> Content
@@ -204,6 +186,7 @@ const PostForm = ({ post, onSubmit, loading }) => {
           </div>
         </div>
 
+        {/* Action Buttons */}
         <div style={styles.actionButtons}>
           <button
             type="button"
@@ -215,17 +198,10 @@ const PostForm = ({ post, onSubmit, loading }) => {
           </button>
           <button
             type="submit"
-            style={{
-              ...styles.submitBtn,
-              ...(loading && styles.submitBtnDisabled),
-            }}
+            style={{ ...styles.submitBtn, ...(loading && styles.submitBtnDisabled) }}
             disabled={loading}
           >
-            {loading
-              ? "⏳ Publishing..."
-              : post
-                ? "💾 Update Post"
-                : "🚀 Publish Post"}
+            {loading ? "⏳ Publishing..." : "🚀 Publish Post"}
           </button>
         </div>
       </form>
@@ -255,66 +231,30 @@ const styles = {
     paddingBottom: "20px",
     borderBottom: "2px solid #f0f0f0",
   },
-  formTitle: {
-    fontSize: "2em",
-    color: "#1A4D5C",
-    margin: "0 0 8px 0",
-    fontWeight: "600",
-  },
+  formTitle: { fontSize: "2em", color: "#1A4D5C", margin: "0 0 8px 0", fontWeight: "600" },
   formSubtitle: { color: "#666", margin: 0, fontSize: "0.95em" },
   errorBox: {
-    backgroundColor: "#fee",
-    color: "#c33",
-    padding: "12px 16px",
-    borderRadius: "8px",
-    marginBottom: "20px",
-    border: "1px solid #fcc",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
+    backgroundColor: "#fee", color: "#c33", padding: "12px 16px",
+    borderRadius: "8px", marginBottom: "20px", border: "1px solid #fcc",
+    display: "flex", alignItems: "center", gap: "8px",
   },
   errorIcon: { fontSize: "1.2em" },
   fieldGroup: { marginBottom: "25px", position: "relative" },
   label: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    marginBottom: "8px",
-    color: "#333",
-    fontWeight: "600",
-    fontSize: "0.95em",
+    display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px",
+    color: "#333", fontWeight: "600", fontSize: "0.95em",
   },
   labelIcon: { fontSize: "1.1em" },
-  optional: {
-    color: "#999",
-    fontWeight: "400",
-    fontSize: "0.85em",
-    marginLeft: "5px",
-  },
+  optional: { color: "#999", fontWeight: "400", fontSize: "0.85em", marginLeft: "5px" },
   titleInput: {
-    width: "100%",
-    padding: "14px 16px",
-    fontSize: "1.1em",
-    border: "2px solid #e0e0e0",
-    borderRadius: "8px",
-    outline: "none",
-    boxSizing: "border-box",
-    fontFamily: "inherit",
+    width: "100%", padding: "14px 16px", fontSize: "1.1em",
+    border: "2px solid #e0e0e0", borderRadius: "8px", outline: "none",
+    boxSizing: "border-box", fontFamily: "inherit",
   },
-  charCount: {
-    position: "absolute",
-    right: "10px",
-    bottom: "-20px",
-    fontSize: "0.75em",
-    color: "#999",
-  },
+  charCount: { position: "absolute", right: "10px", bottom: "-20px", fontSize: "0.75em", color: "#999" },
   uploadBox: {
-    display: "block",
-    border: "2px dashed #ccc",
-    borderRadius: "12px",
-    padding: "40px 20px",
-    textAlign: "center",
-    cursor: "pointer",
+    display: "block", border: "2px dashed #ccc", borderRadius: "12px",
+    padding: "40px 20px", textAlign: "center", cursor: "pointer",
     backgroundColor: "#fafafa",
   },
   uploadContent: { pointerEvents: "none" },
@@ -322,29 +262,13 @@ const styles = {
   uploadText: { color: "#555", margin: "5px 0" },
   uploadHint: { color: "#999", fontSize: "0.85em" },
   imagePreviewContainer: {
-    position: "relative",
-    borderRadius: "12px",
-    overflow: "hidden",
-    border: "2px solid #e0e0e0",
+    position: "relative", borderRadius: "12px", overflow: "hidden", border: "2px solid #e0e0e0",
   },
-  imagePreview: {
-    width: "100%",
-    maxHeight: "300px",
-    objectFit: "cover",
-    display: "block",
-  },
+  imagePreview: { width: "100%", maxHeight: "300px", objectFit: "cover", display: "block" },
   removeImageBtn: {
-    position: "absolute",
-    top: "10px",
-    right: "10px",
-    padding: "8px 14px",
-    backgroundColor: "rgba(220, 53, 69, 0.95)",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontSize: "0.9em",
-    fontWeight: "500",
+    position: "absolute", top: "10px", right: "10px", padding: "8px 14px",
+    backgroundColor: "rgba(220, 53, 69, 0.95)", color: "white", border: "none",
+    borderRadius: "6px", cursor: "pointer", fontSize: "0.9em", fontWeight: "500",
   },
   quillWrapper: {
     border: "2px solid #e0e0e0",
@@ -355,46 +279,22 @@ const styles = {
     height: "300px",
     marginBottom: "50px",
   },
-  editorFooter: {
-    marginTop: "8px",
-    fontSize: "0.85em",
-    color: "#666",
-    textAlign: "right",
-  },
+  editorFooter: { marginTop: "8px", fontSize: "0.85em", color: "#666", textAlign: "right" },
   actionButtons: {
-    display: "flex",
-    gap: "15px",
-    marginTop: "30px",
-    paddingTop: "20px",
-    borderTop: "2px solid #f0f0f0",
-    justifyContent: "flex-end",
+    display: "flex", gap: "15px", marginTop: "30px", paddingTop: "20px",
+    borderTop: "2px solid #f0f0f0", justifyContent: "flex-end",
   },
   cancelBtn: {
-    padding: "12px 28px",
-    backgroundColor: "transparent",
-    color: "#666",
-    border: "2px solid #ddd",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "0.95em",
-    fontWeight: "500",
+    padding: "12px 28px", backgroundColor: "transparent", color: "#666",
+    border: "2px solid #ddd", borderRadius: "8px", cursor: "pointer",
+    fontSize: "0.95em", fontWeight: "500",
   },
   submitBtn: {
-    padding: "12px 32px",
-    backgroundColor: "#FF6B35",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontSize: "1em",
-    fontWeight: "600",
+    padding: "12px 32px", backgroundColor: "#FF6B35", color: "white", border: "none",
+    borderRadius: "8px", cursor: "pointer", fontSize: "1em", fontWeight: "600",
     boxShadow: "0 4px 12px rgba(255, 107, 53, 0.3)",
   },
-  submitBtnDisabled: {
-    backgroundColor: "#999",
-    cursor: "not-allowed",
-    boxShadow: "none",
-  },
+  submitBtnDisabled: { backgroundColor: "#999", cursor: "not-allowed", boxShadow: "none" },
 };
 
 export default PostForm;
