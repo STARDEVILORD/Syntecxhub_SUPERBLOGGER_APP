@@ -2,7 +2,6 @@ const express = require("express");
 const path = require("path");
 const dotenv = require("dotenv");
 
-// Load env variables
 dotenv.config();
 
 const connectDB = require("./config/db");
@@ -15,9 +14,6 @@ connectDB();
 
 const app = express();
 
-// ============================================
-// CORS Configuration
-// ============================================
 const allowedOrigins = [process.env.CLIENT_URL || "http://localhost:3000"];
 
 app.use((req, res, next) => {
@@ -40,16 +36,9 @@ app.use((req, res, next) => {
   }
   next();
 });
-
-// ============================================
-// Middleware
-// ============================================
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-// ============================================
-// Test Route
-// ============================================
 app.get("/", (req, res) => {
   res.json({
     message: "Blog API is running!",
@@ -63,24 +52,15 @@ app.get("/", (req, res) => {
   });
 });
 
-// ============================================
-// API Routes
-// ============================================
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/posts/:postId/comments", commentRoutes);
 app.use("/api/users", userRoutes);
 
-// ============================================
-// 404 Handler
-// ============================================
 app.use((req, res) => {
   res.status(404).json({ msg: `Route not found: ${req.method} ${req.path}` });
 });
 
-// ============================================
-// Error Handler
-// ============================================
 app.use((err, req, res, next) => {
   console.error("Server Error:", err);
   res.status(500).json({ msg: "Server error", error: err.message });
