@@ -27,34 +27,67 @@ exports.getPost = async (req, res) => {
 
 exports.createPost = async (req, res) => {
   try {
-    console.log("📥 Backend received:");
+    // ✅ Add detailed logging
+    console.log("=".repeat(50));
+    console.log("📥 CREATE POST REQUEST");
     console.log("  req.body:", req.body);
-    console.log("  req.file:", req.file ? req.file.originalname : "none");
+    console.log("  req.file:", req.file ? {
+      fieldname: req.file.fieldname,
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size
+    } : "none");
+    console.log("  Content-Type:", req.headers["content-type"]);
+    console.log("=".repeat(50));
 
     const { title, content, imageUrl } = req.body;
 
-    // ✅ Validate
-    if (!title || !content) {
-      console.log("❌ Missing fields. Title:", title, "Content:", content);
-      return res.status(400).json({ msg: "Title and content are required" });
+    // ✅ Better validation with detailed error
+    if (!title || title.trim() === "") {
+      console.log("❌ Title missing or empty");
+      return res.status(400).json({ 
+        msg: "Title is required",
+        received: { title, content, imageUrl }
+      });
     }
 
-    const post = await Post.create({
-      title,
-      content,
-      imageUrl: imageUrl || (req.file ? `/uploads/${req.file.filename}` : ""),
-      author: req.user._id,
-    });
+    if (!content || content.trim() === "") {
+      console.log("❌ Content missing or empty");
+      return res.status(400).json({ 
+        msg: "Content is required",
+        received: { title, content, imageUrl }
+      });
+    }
 
+    const postData = {
+      title: title.trim(),
+      content: content.trim(),
+      author: req.user._id,
+    };
+
+    // ✅ Handle image (either from Cloudinary URL or file upload)
+    if (imageUrl) {
+      postData.imageUrl = imageUrl;
+    } else if (req.file) {
+      // If you're using multer/cloudinary
+      // postData.imageUrl = req.file.path; // Cloudinary URL
+      // OR for local storage:
+      postData.imageUrl = `/uploads/${req.file.filename}`;
+    }
+
+    const post = await Post.create(postData);
     await post.populate("author", "name email");
-    console.log("✅ Post created:", post._id);
+
+    console.log("✅ Post created successfully:", post._id);
     res.status(201).json(post);
   } catch (error) {
     console.error("❌ Create Post Error:", error);
-    res.status(500).json({ msg: "Server error", error: error.message });
+    res.status(500).json({ 
+      msg: "Server error", 
+      error: error.message 
+    });
   }
 };
-
 exports.updatePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
