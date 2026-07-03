@@ -6,6 +6,9 @@ import LandingPage from "./LandingPage";
 
 const HomePage = () => {
   const { user } = useAuth();
+   if (!user) {
+    return <LandingPage />;
+  }
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
