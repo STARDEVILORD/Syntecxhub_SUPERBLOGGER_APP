@@ -28,7 +28,15 @@ exports.getPost = async (req, res) => {
 exports.createPost = async (req, res) => {
   try {
     const { title, content, imageUrl } = req.body;
+    console.log("📥 Backend received:", {
+      body: req.body,
+      title,
+      content,
+      imageUrl,
+    });
+
     if (!title || !content) {
+      console.log("❌ Missing title or content");
       return res.status(400).json({ msg: "Title and content are required" });
     }
 
@@ -38,9 +46,11 @@ exports.createPost = async (req, res) => {
       imageUrl: imageUrl || "",
       author: req.user._id,
     });
-    await post.populate("author", "name email");
+      await post.populate("author", "name email");
+    console.log("✅ Post created:", post._id);
     res.status(201).json(post);
   } catch (error) {
+    console.error("❌ Create Post Error:", error);
     res.status(500).json({ msg: "Server error", error: error.message });
   }
 };
