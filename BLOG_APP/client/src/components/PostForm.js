@@ -79,10 +79,17 @@ const PostForm = ({ post, onSubmit, loading }) => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("content", content);
-    if (image) formData.append("image", image);
+  const formData = new FormData();
+  formData.append("title", title);       
+  formData.append("content", content);   
+  if (image) {
+    formData.append("image", image);      
+  }
+
+  console.log("📤 Submitting form data:");
+  for (let [key, value] of formData.entries()) {
+    console.log(`  ${key}:`, value instanceof File ? `File: ${value.name}` : value);
+  }
 
     try {
       await onSubmit(formData);
