@@ -27,7 +27,6 @@ exports.getPost = async (req, res) => {
 
 exports.createPost = async (req, res) => {
   try {
-    // ✅ Add detailed logging
     console.log("=".repeat(50));
     console.log("📥 CREATE POST REQUEST");
     console.log("  req.body:", req.body);
@@ -41,8 +40,6 @@ exports.createPost = async (req, res) => {
     console.log("=".repeat(50));
 
     const { title, content, imageUrl } = req.body;
-
-    // ✅ Better validation with detailed error
     if (!title || title.trim() === "") {
       console.log("❌ Title missing or empty");
       return res.status(400).json({ 
@@ -65,13 +62,9 @@ exports.createPost = async (req, res) => {
       author: req.user._id,
     };
 
-    // ✅ Handle image (either from Cloudinary URL or file upload)
     if (imageUrl) {
       postData.imageUrl = imageUrl;
     } else if (req.file) {
-      // If you're using multer/cloudinary
-      // postData.imageUrl = req.file.path; // Cloudinary URL
-      // OR for local storage:
       postData.imageUrl = `/uploads/${req.file.filename}`;
     }
 
