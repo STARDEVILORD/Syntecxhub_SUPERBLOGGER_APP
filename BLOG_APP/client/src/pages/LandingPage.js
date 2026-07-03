@@ -3,23 +3,62 @@ import { useState } from "react";
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const [videoError, setVideoError] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  console.log("🎨 LandingPage rendering...");
+
+  const features = [
+    {
+      icon: "✍️",
+      title: "Rich Text Editor",
+      description: "Create beautiful blog posts with our powerful editor.",
+    },
+    {
+      icon: "🖼️",
+      title: "Image Upload",
+      description: "Upload and manage your images with cloud storage.",
+    },
+    {
+      icon: "🔒",
+      title: "Secure & Private",
+      description: "Your content is safe with encryption.",
+    },
+    {
+      icon: "💬",
+      title: "Engage Readers",
+      description: "Built-in comments and likes to interact with readers.",
+    },
+    {
+      icon: "📱",
+      title: "Mobile Friendly",
+      description: "Fully responsive design that works everywhere.",
+    },
+    {
+      icon: "⚡",
+      title: "Lightning Fast",
+      description: "Optimized for speed and smooth experience.",
+    },
+  ];
 
   return (
     <div style={styles.container}>
       {/* HERO SECTION */}
       <section style={styles.heroSection}>
-        <video
-          style={styles.backgroundVideo}
-          src="/assets/background.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          onError={(e) => {
-            console.log("Video failed to load");
-            e.target.style.display = "none";
-          }}
-        />
+        {!videoError && (
+          <video
+            style={styles.backgroundVideo}
+            src="/assets/background.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            onError={() => {
+              console.log("⚠️ Video failed to load");
+              setVideoError(true);
+            }}
+          />
+        )}
         <div style={styles.overlay}></div>
 
         <div style={styles.heroContent}>
@@ -45,10 +84,22 @@ const LandingPage = () => {
 
       {/* FEATURES SECTION */}
       <section style={styles.featuresSection}>
-        <h2 style={styles.sectionTitle}>Why Choose Us?</h2>
-        <p style={styles.sectionSubtitle}>
-          Everything you need to create amazing content
-        </p>
+        <div style={styles.sectionHeader}>
+          <h2 style={styles.sectionTitle}>Why Choose Us?</h2>
+          <p style={styles.sectionSubtitle}>
+            Everything you need to create amazing content
+          </p>
+        </div>
+
+        <div style={styles.featuresGrid}>
+          {features.map((feature, index) => (
+            <div key={index} style={styles.featureCard}>
+              <div style={styles.featureIcon}>{feature.icon}</div>
+              <h3 style={styles.featureTitle}>{feature.title}</h3>
+              <p style={styles.featureDescription}>{feature.description}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* ECHOES SECTION */}
@@ -72,14 +123,25 @@ const LandingPage = () => {
           </div>
 
           <div style={styles.echoesImageContainer}>
-            <img
-              src="/assets/echoes-image.jpg"
-              alt="Echoes"
-              style={styles.echoesImage}
-              onError={(e) => {
-                e.target.style.display = "none";
-              }}
-            />
+            {!imageError && (
+              <img
+                src="/assets/echoes-image.jpg"
+                alt="Echoes"
+                style={styles.echoesImage}
+                onError={() => {
+                  console.log("⚠️ Image failed to load");
+                  setImageError(true);
+                }}
+              />
+            )}
+            {imageError && (
+              <div style={styles.placeholderImage}>
+                <span style={{ fontSize: "100px" }}>🎨</span>
+                <p style={{ color: "white", marginTop: "20px" }}>
+                  Your image here
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -99,7 +161,9 @@ const LandingPage = () => {
 };
 
 const styles = {
-  container: { width: "100%" },
+  container: {
+    width: "100%",
+  },
 
   // HERO
   heroSection: {
@@ -111,6 +175,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    background: "linear-gradient(135deg, #FF6B35 0%, #FF8E53 100%)",
   },
   backgroundVideo: {
     position: "absolute",
@@ -127,7 +192,8 @@ const styles = {
     left: 0,
     width: "100%",
     height: "100%",
-    background: "linear-gradient(135deg, rgba(255, 107, 53, 0.4) 0%, rgba(199, 62, 58, 0.5) 100%)",
+    background:
+      "linear-gradient(135deg, rgba(255, 107, 53, 0.4) 0%, rgba(199, 62, 58, 0.5) 100%)",
     zIndex: 2,
   },
   heroContent: {
@@ -139,13 +205,16 @@ const styles = {
     padding: "0 20px",
   },
   heroTitle: {
-    fontSize: "4em",
+    fontSize: "4.5em",
     fontWeight: "700",
     margin: "0 0 25px 0",
     textShadow: "0 4px 20px rgba(0,0,0,0.4)",
     lineHeight: "1.2",
   },
-  heroTitleAccent: { color: "#FFE5D9" },
+  heroTitleAccent: {
+    color: "#FFE5D9",
+    display: "inline-block",
+  },
   heroSubtitle: {
     fontSize: "1.3em",
     lineHeight: "1.6",
@@ -187,10 +256,15 @@ const styles = {
   featuresSection: {
     padding: "80px 20px",
     backgroundColor: "white",
+  },
+  sectionHeader: {
     textAlign: "center",
+    marginBottom: "60px",
+    maxWidth: "600px",
+    margin: "0 auto 60px auto",
   },
   sectionTitle: {
-    fontSize: "2.5em",
+    fontSize: "2.8em",
     color: "#1A4D5C",
     margin: "0 0 15px 0",
     fontWeight: "700",
@@ -198,6 +272,37 @@ const styles = {
   sectionSubtitle: {
     fontSize: "1.2em",
     color: "#666",
+    margin: 0,
+  },
+  featuresGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: "30px",
+    maxWidth: "1200px",
+    margin: "0 auto",
+  },
+  featureCard: {
+    padding: "40px 30px",
+    backgroundColor: "#f8f9fa",
+    borderRadius: "16px",
+    textAlign: "center",
+    border: "2px solid transparent",
+    transition: "all 0.3s",
+  },
+  featureIcon: {
+    fontSize: "3.5em",
+    marginBottom: "20px",
+  },
+  featureTitle: {
+    fontSize: "1.4em",
+    color: "#1A4D5C",
+    margin: "0 0 15px 0",
+    fontWeight: "600",
+  },
+  featureDescription: {
+    color: "#666",
+    lineHeight: "1.6",
+    margin: 0,
   },
 
   // ECHOES
@@ -214,7 +319,10 @@ const styles = {
     alignItems: "center",
     minHeight: "500px",
   },
-  echoesText: { color: "white", paddingRight: "40px" },
+  echoesText: {
+    color: "white",
+    paddingRight: "40px",
+  },
   echoesTitle: {
     fontSize: "3.5em",
     fontWeight: "700",
@@ -222,7 +330,10 @@ const styles = {
     lineHeight: "1.2",
     color: "white",
   },
-  echoesTitleAccent: { color: "#FF6B35", display: "block" },
+  echoesTitleAccent: {
+    color: "#FF6B35",
+    display: "block",
+  },
   echoesDescription: {
     fontSize: "1.2em",
     lineHeight: "1.7",
@@ -254,6 +365,18 @@ const styles = {
     borderRadius: "20px",
     boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
   },
+  placeholderImage: {
+    width: "100%",
+    maxWidth: "500px",
+    height: "400px",
+    background: "rgba(255,255,255,0.1)",
+    borderRadius: "20px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    border: "2px dashed rgba(255,255,255,0.3)",
+  },
 
   // CTA
   ctaSection: {
@@ -262,8 +385,16 @@ const styles = {
     textAlign: "center",
     color: "white",
   },
-  ctaTitle: { fontSize: "2.5em", margin: "0 0 20px 0", fontWeight: "700" },
-  ctaText: { fontSize: "1.2em", margin: "0 0 30px 0", opacity: 0.95 },
+  ctaTitle: {
+    fontSize: "2.5em",
+    margin: "0 0 20px 0",
+    fontWeight: "700",
+  },
+  ctaText: {
+    fontSize: "1.2em",
+    margin: "0 0 30px 0",
+    opacity: 0.95,
+  },
   ctaButton: {
     display: "inline-block",
     padding: "16px 45px",
